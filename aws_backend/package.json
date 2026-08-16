@@ -1,0 +1,15 @@
+{
+  "name": "auth_flutter_aws_backend",
+  "version": "1.0.0",
+  "description": "AWS SNS OTP backend for auth_flutter",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "aws-sdk": "^2.1500.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.4"
+  }
+}
