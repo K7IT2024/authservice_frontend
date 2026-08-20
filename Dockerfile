@@ -1,11 +1,11 @@
-FROM ghcr.io/cirruslabs/flutter:3.24.4 AS builder
+FROM ghcr.io/cirruslabs/flutter:stable AS builder
 WORKDIR /app
 
 COPY pubspec.yaml pubspec.lock ./
 RUN flutter pub get
 
 COPY . .
-ARG API_BASE_URL=http://localhost:8080
+ARG API_BASE_URL=https://authservice-sz7a.onrender.com
 RUN flutter build web --release --dart-define=API_BASE_URL=${API_BASE_URL}
 
 FROM nginx:1.27-alpine
