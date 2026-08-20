@@ -1,9 +1,30 @@
-FROM ghcr.io/cirruslabs/flutter:3.47.1 AS builder
+FROM ubuntu:22.04 AS builder
+
+ARG FLUTTER_VERSION=3.47.1
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install dependencies for Flutter
+RUN apt-get update && apt-get install -y --no-install-recommends \
+  curl git xz-utils unzip zip libglu1-mesa openjdk-11-jdk ca-certificates wget gnupg2 procps sudo \
+  && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /opt
+
+# Download and extract a specific Flutter SDK version
+RUN wget -q "https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_${FLUTTER_VERSION}-stable.tar.xz" -O flutter.tar.xz \
+  && tar -xJf flutter.tar.xz \
+  && rm flutter.tar.xz
+
+ENV PATH="/opt/flutter/bin:/opt/flutter/bin/cache/dart-sdk/bin:${PATH}"
+
 WORKDIR /app
 
+# Copy dependency manifests and fetch packages first (cache step)
 COPY pubspec.yaml pubspec.lock ./
+RUN flutter --version
 RUN flutter pub get --verbose
 
+# Copy the rest of the source and build
 COPY . .
 ARG API_BASE_URL=https://authservice-sz7a.onrender.com
 RUN flutter build web --release --dart-define=API_BASE_URL=${API_BASE_URL}
