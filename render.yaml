@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: authservice-frontend
+    runtime: docker
+    plan: starter
+    region: oregon
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /
+    envVars:
+      - key: PORT
+        value: "8080"
+      - key: API_BASE_URL
+        value: "https://authservice-sz7a.onrender.com"
+        sync: false

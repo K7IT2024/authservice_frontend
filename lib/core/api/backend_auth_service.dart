@@ -1,9 +1,10 @@
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
+import 'package:auth_flutter/core/app_config.dart';
 
 class BackendAuthService {
-  static const String baseUrl = 'http://localhost:8080/api/v1';
+  static const String baseUrl = '${AppConfig.apiBaseUrl}/api/v1';
 
   /// Send OTP via backend (AWS SNS)
   Future<void> sendMobileOtp({

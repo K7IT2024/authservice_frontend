@@ -1,17 +1,33 @@
 # auth_flutter
 
-A new Flutter project.
+Flutter frontend for the K7 Auth service.
 
-## Getting Started
+## Render deployment
 
-This project is a starting point for a Flutter application.
+This frontend is designed to be deployed as a separate Render web service from the backend API.
 
-A few resources to get you started if this is your first Flutter project:
+### Required backend URL
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+Set the build-time environment variable before deployment:
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+- API_BASE_URL=https://your-backend-service.onrender.com
+
+The app uses this value to target the backend instead of the local development URL.
+
+### Render config
+
+Use the included `render.yaml` file in this repository, or create a Docker web service with the `Dockerfile` in this folder.
+
+### Local development
+
+```bash
+flutter pub get
+flutter run -d chrome
+```
+
+If you want to override the backend URL locally, run:
+
+```bash
+flutter run -d chrome --dart-define=API_BASE_URL=http://localhost:8080
+```
+

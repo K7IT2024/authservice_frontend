@@ -1,9 +1,9 @@
+import 'package:auth_flutter/core/app_config.dart';
 import 'package:flutter/material.dart';
 
 class EndPoints {
 
-  static const String baseUrl =
-      "http://localhost:8080/api/v1/auth";
+  static const String baseUrl = AppConfig.authApiBaseUrl;
 
   static const String checkUser =
       "$baseUrl/check-user";
@@ -32,7 +32,7 @@ class EndPoints {
 
   static const resetPassword="$baseUrl/reset-password";
 
-  static const userMe = "http://localhost:8080/api/v1/user/me";
+  static const userMe = AppConfig.userMeUrl;
 
   static const firebaseLogin="$baseUrl/firebase-login";
 
