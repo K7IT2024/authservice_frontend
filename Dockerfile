@@ -2,7 +2,7 @@ FROM ghcr.io/cirruslabs/flutter:stable AS builder
 WORKDIR /app
 
 COPY pubspec.yaml pubspec.lock ./
-RUN flutter pub get
+RUN flutter pub get --verbose
 
 COPY . .
 ARG API_BASE_URL=https://authservice-sz7a.onrender.com
