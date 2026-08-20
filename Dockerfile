@@ -15,6 +15,9 @@ RUN wget -q "https://storage.googleapis.com/flutter_infra_release/releases/stabl
   && tar -xJf flutter.tar.xz \
   && rm flutter.tar.xz
 
+# Mark the extracted Flutter repo as a safe directory for git to avoid ownership errors
+RUN git config --global --add safe.directory /opt/flutter || true
+
 ENV PATH="/opt/flutter/bin:/opt/flutter/bin/cache/dart-sdk/bin:${PATH}"
 
 WORKDIR /app
