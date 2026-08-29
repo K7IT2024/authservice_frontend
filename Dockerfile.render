@@ -32,6 +32,9 @@ RUN flutter build web --release \
   --dart-define=API_BASE_URL=${API_BASE_URL} \
   --dart-define=FIREBASE_WEB_CONFIG="${FIREBASE_WEB_CONFIG}"
 
+# Ensure firebase-config.js is baked into the built assets so nginx serves it directly
+RUN printf 'window.__FIREBASE_WEB_CONFIG = %s;' "$FIREBASE_WEB_CONFIG" > build/web/firebase-config.js
+
 # Production stage: nginx
 FROM nginx:1.27-alpine
 COPY nginx.conf.template /etc/nginx/templates/default.conf.template
