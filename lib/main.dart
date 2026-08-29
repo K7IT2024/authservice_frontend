@@ -13,47 +13,9 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   if (kIsWeb) {
-    // Try build-time dart-define first
-    const webConfigRaw = String.fromEnvironment('FIREBASE_WEB_CONFIG', defaultValue: '');
-    String effectiveConfig = webConfigRaw;
-
-    // If not provided at build time, try runtime-injected global (firebase-config.js)
-    if (effectiveConfig.isEmpty) {
-      final dynamic runtime = js.context['__FIREBASE_WEB_CONFIG'];
-      if (runtime != null) {
-        try {
-          effectiveConfig = js.context.callMethod('JSON.stringify', [runtime]);
-        } catch (_) {
-          try {
-            effectiveConfig = runtime.toString();
-          } catch (_) {
-            effectiveConfig = '';
-          }
-        }
-      }
-    }
-
-    if (effectiveConfig.isNotEmpty) {
-      try {
-        final Map<String, dynamic> conf = jsonDecode(effectiveConfig);
-        await Firebase.initializeApp(
-          options: FirebaseOptions(
-            apiKey: conf['apiKey'] ?? '',
-            authDomain: conf['authDomain'],
-            projectId: conf['projectId'] ?? '',
-            storageBucket: conf['storageBucket'],
-            messagingSenderId: conf['messagingSenderId'],
-            appId: conf['appId'] ?? '',
-            measurementId: conf['measurementId'],
-          ),
-        );
-      } catch (e) {
-        // Fallback
-        await Firebase.initializeApp();
-      }
-    } else {
-      await Firebase.initializeApp();
-    }
+    // Temporarily skip Firebase initialization on web to restore prior working state.
+    // This avoids runtime crashes when FIREBASE_WEB_CONFIG is missing or malformed.
+    print('Skipping Firebase initialization on web (no config).');
   } else {
     await Firebase.initializeApp();
   }
