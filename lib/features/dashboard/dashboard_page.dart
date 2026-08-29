@@ -141,7 +141,7 @@ class _DashboardPageState extends State<DashboardPage> {
 
         child: Text(
 
-          "${profile?.firstName.substring(0,1) ?? "U"}",
+          "${profile?.firstName?.substring(0,1) ?? "U"}",
 
           style: const TextStyle(
 
