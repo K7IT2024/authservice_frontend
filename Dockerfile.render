@@ -27,7 +27,10 @@ RUN flutter pub get --verbose
 # Copy the rest of the source and build
 COPY . .
 ARG API_BASE_URL=https://authservice-sz7a.onrender.com
-RUN flutter build web --release --dart-define=API_BASE_URL=${API_BASE_URL}
+ARG FIREBASE_WEB_CONFIG='{}'
+RUN flutter build web --release \
+  --dart-define=API_BASE_URL=${API_BASE_URL} \
+  --dart-define=FIREBASE_WEB_CONFIG="${FIREBASE_WEB_CONFIG}"
 
 # Production stage: nginx
 FROM nginx:1.27-alpine

@@ -1,7 +1,6 @@
 import 'dart:async';
 
-import 'package:auth_flutter/core/api/auth_api.dart';
-import 'package:auth_flutter/core/firebase/backend_phone_service.dart';
+import 'package:auth_flutter/core/firebase/firebase_phone_service.dart';
 import 'package:auth_flutter/core/storage/secure_storage_service.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -17,7 +16,7 @@ class MobileLoginPage extends StatefulWidget {
 class _MobileLoginPageState
     extends State<MobileLoginPage> {
 
-  final BackendPhoneService _phoneService = BackendPhoneService();
+  final FirebasePhoneService _phoneService = FirebasePhoneService();
 
   final TextEditingController mobileController =
       TextEditingController();
@@ -145,11 +144,12 @@ bool canResend = false;
 
   try {
 
+    final rawPhone = mobileController.text.trim();
+    final phoneNumber = rawPhone.startsWith('+') ? rawPhone : '+91$rawPhone';
+
     await _phoneService.sendOtp(
-
-      phoneNumber: "${mobileController.text.trim()}",
-
-     onCodeSent: (id) {
+      phoneNumber: phoneNumber,
+      onCodeSent: (id) {
 
         verificationId = id;
 
@@ -212,31 +212,18 @@ Future<void> verifyOtp() async {
     hideLoading();
 
     if (login.success) {
-
-      //------------------------------------------------
-      // Save JWT
-      //------------------------------------------------
-
-        await SecureStorageService.saveTokens(
-
-        accessToken: login.accessToken!,
-
-        refreshToken: login.refreshToken!,
-
+      await SecureStorageService.saveTokens(
+        accessToken: login.accessToken,
+        refreshToken: login.refreshToken,
       );
 
       showMessage("Login Successful");
 
       if (mounted) {
-
         context.go("/dashboard");
-
       }
-
     } else {
-
-      showMessage(login.message ?? 'Login failed');
-
+      showMessage(login.message);
     }
 
   } catch (e) {

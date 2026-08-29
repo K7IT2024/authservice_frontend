@@ -1,10 +1,10 @@
 import 'package:auth_flutter/core/api/auth_api.dart';
+import 'package:auth_flutter/core/models/login_response.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class FirebasePhoneService {
-  // Adapter: replaced Firebase implementation with backend API calls
-  // Keeps the same interface so UI code doesn't need large changes.
-
-  int? _lastUserId;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  String? _verificationId;
 
   Future<void> sendOtp({
     required String phoneNumber,
@@ -12,40 +12,66 @@ class FirebasePhoneService {
     required Function(String) onError,
   }) async {
     try {
-      // phoneNumber expected in formats like +91xxxxxxxxxx or 10-digit
-      // Use backend checkUser to find userId by phone/email
-      final username = phoneNumber.replaceAll('+', '');
-
-      final check = await AuthApi.checkUser(username);
-
-      if (!check.exists) {
-        onError('User not found');
-        return;
-      }
-
-      _lastUserId = check.userId;
-
-      final res = await AuthApi.sendMobileOtp(check.userId!);
-
-      if (res.success) {
-        onCodeSent('OK');
-      } else {
-        onError(res.message ?? 'Failed to send OTP');
-      }
+      await _auth.verifyPhoneNumber(
+        phoneNumber: phoneNumber,
+        timeout: const Duration(seconds: 60),
+        verificationCompleted: (PhoneAuthCredential credential) async {
+          final user = _auth.currentUser;
+          if (user == null) {
+            await _auth.signInWithCredential(credential);
+          }
+        },
+        verificationFailed: (FirebaseAuthException e) {
+          onError(_firebaseErrorMessage(e));
+        },
+        codeSent: (String verificationId, int? resendToken) {
+          _verificationId = verificationId;
+          onCodeSent(verificationId);
+        },
+        codeAutoRetrievalTimeout: (String verificationId) {
+          _verificationId = verificationId;
+          onCodeSent(verificationId);
+        },
+      );
+    } on FirebaseAuthException catch (e) {
+      onError(_firebaseErrorMessage(e));
     } catch (e) {
       onError(e.toString());
     }
   }
 
-  Future<String> verifyOtp(String otp) async {
-    if (_lastUserId == null) throw Exception('No OTP request in progress');
-
-    final login = await AuthApi.verifyMobileOtp(_lastUserId!, otp);
-
-    if (login.success) {
-      return login.accessToken ?? '';
+  Future<LoginResponse> verifyOtp(String otp) async {
+    if (_verificationId == null || _verificationId!.isEmpty) {
+      throw Exception('No OTP verification in progress');
     }
 
-    throw Exception(login.message ?? 'OTP verification failed');
+    final credential = PhoneAuthProvider.credential(
+      verificationId: _verificationId!,
+      smsCode: otp,
+    );
+
+    final userCredential = await _auth.signInWithCredential(credential);
+    final idToken = await userCredential.user?.getIdToken();
+
+    if (idToken == null || idToken.isEmpty) {
+      throw Exception('Unable to fetch Firebase token');
+    }
+
+    return AuthApi.firebaseLogin(idToken);
+  }
+
+  String _firebaseErrorMessage(FirebaseAuthException e) {
+    switch (e.code) {
+      case 'invalid-phone-number':
+        return 'Invalid phone number format.';
+      case 'too-many-requests':
+        return 'Too many attempts. Please try again later.';
+      case 'captcha-check-failed':
+        return 'Captcha verification failed.';
+      case 'network-request-failed':
+        return 'Network error. Please check your connection.';
+      default:
+        return e.message ?? 'Firebase authentication failed.';
+    }
   }
 }
